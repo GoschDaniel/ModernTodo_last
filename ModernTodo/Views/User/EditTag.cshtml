@@ -1,0 +1,32 @@
+﻿@model ModernTodo.Models.TaskModelVm
+
+@{
+	ViewData["Title"] = "Edit Tag";
+}
+
+@foreach (var item in Model.AvailableTags)
+{
+	<div>
+		<form asp-action="SaveEditTag">
+
+			<input type="hidden" name="id" value="@item.Id">
+
+			<div class="col-md-12 mb-3">
+				<div class="input-group">
+					<span class="input-group-text" id="name">Name</span>
+					<input type="text" class="form-control" name="name" value="@item.Name">
+				</div>
+			</div>
+
+			<div class="col-md-12 mb-3">
+				<div class="input-group">
+					<span class="input-group-text" id="hexColor">HexColor</span>
+					<input type="color" class="form-control" name="hexColor" value="#@item.HexColor" style="height:38px;">
+				</div>
+			</div>
+
+			<input type="submit" value="Save" class="btn btn-primary" /> |
+			<a asp-action="Tags" class="btn btn-secondary">Back to List</a>
+		</form>
+	</div>
+}

@@ -1,0 +1,64 @@
+﻿@model ModernTodo.Models.UserModelVm
+
+@{
+	ViewData["Title"] = "Adminpanel";
+}
+
+<h2>Adminpanel</h2>
+
+<table id="Adminpanel" class="table table-sm table-striped table-hover">
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Mail</th>
+			<th>Username</th>
+			<th>RegisteredOn</th>
+			<th>Rolle</th>
+			<th>Anzahl der Listen</th>
+			<th>Anzahl der Aufgaben</th>
+			<th>Anzahl der Tags</th>
+			<th></th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var user in Model.UserModelList)
+		{
+			<tr id="@user.UserId">
+				<td>@user.UserId</td>
+				<td>@user.Mail</td>
+				<td>@user.Username</td>
+				<td>@user.RegisteredOn</td>
+				<td>@user.Role.RoleName</td>
+				<td>@user.NumberOfLists</td>
+				<td>@user.NumberOfTasks</td>
+				<td>@user.NumberOfTags</td>
+				<td>
+					<form method="post" asp-action="UpdateUserRole" asp-controller="Admin">
+						<input type="hidden" name="UserId" value="@user.UserId" />
+						<div class="row">
+							<div class="col-md-6">
+								<select class="form-control" name="Role.RoleId">
+									@foreach (var role in Model.AvailableRoles)
+									{
+										<option value="@role.RoleId" selected="@(role.RoleId== user.Role.RoleId)">@role.RoleName</option>
+									}
+								</select>
+							</div>
+							<div class="col-md-6">
+								<button type="submit" class="btn btn-primary">Rolle aktualisieren</button>
+							</div>
+						</div>
+					</form>
+				</td>
+				<td>
+					<form method="post" asp-action="ResetPassword" asp-controller="Admin">
+						<input type="hidden" name="userId" value="@user.UserId" />
+						<button type="submit" class="btn btn-primary">Passwort zurücksetzten</button>
+					</form>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
+<span class="text-danger">@TempData["Message"]</span>

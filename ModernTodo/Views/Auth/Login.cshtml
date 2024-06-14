@@ -1,0 +1,17 @@
+﻿<h2>Login</h2>
+
+<form action="/Auth/Login" method="post">
+
+    <div class="input-group mb-2">
+        <span class="input-group-text" id="mail">E-Mail</span>
+        <input type="text" class="form-control" placeholder="mail" name="mail" value="@TempData["Mail"]">
+    </div>
+
+    <div class="input-group mb-2">
+        <span class="input-group-text" id="password">Password</span>
+        <input type="password" class="form-control" placeholder="password" name="password">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Login</button>
+</form>
+<span class="text-danger">@TempData["ErrorMessage"]</span>

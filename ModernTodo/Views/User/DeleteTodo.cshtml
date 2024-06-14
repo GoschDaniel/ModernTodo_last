@@ -1,0 +1,48 @@
+﻿@model ModernTodo.Models.TodoModelVm
+
+@{
+    ViewData["Title"] = "DeleteTodo";
+}
+
+<h1>DeleteTodo</h1>
+
+@foreach (var item in Model.ToDoList)
+{
+    <div>
+        <h4>Todo details:</h4>
+        <dl class="row">
+            <dt class="col-sm-2">
+                Id:
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => item.TodoId)
+            </dd>
+
+            <dt class="col-sm-2">
+                Name:
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => item.Name)
+            </dd>
+
+            <dt class="col-sm-2">
+                Completed Tasks:
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => item.CompletedTasksCount)
+            </dd>
+
+            <dt class="col-sm-2">
+                Not Completed Tasks:
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => item.NotCompletedTasksCount)
+            </dd>
+        </dl>
+
+        <form asp-action="ConfirmDeleteTodo" asp-route-id="@item.TodoId">
+            <input type="submit" value="Confirm Delete" class="btn btn-danger" /> |
+            <a asp-action="Todos" class="btn btn-secondary">Back to List</a>
+        </form>
+    </div>
+}

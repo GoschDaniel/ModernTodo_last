@@ -1,0 +1,81 @@
+﻿@model ModernTodo.Models.TaskModelVm
+
+@{
+	ViewData["Title"] = "EditTask";
+}
+
+<h1>EditTask</h1>
+
+@foreach (var item in Model.TaskList)
+{
+	<div>
+		<form asp-action="EditTask">
+
+			<input type="hidden" value="@item.TaskId" name="taskId"/>
+			<div class="col-md-12 mb-3">
+				<div class="input-group">
+					<span class="input-group-text" id="description">Description</span>
+					<input type="text" class="form-control" name="Description" value="@item.Description">
+				</div>
+			</div>
+			<div class="col-md-12 mb-3">
+				<div class="input-group">
+					<span class="input-group-text" id="createdOn">CreatedOn</span>
+					<input type="date" class="form-control" name="CreatedOn" value="@item.CreatedOn.ToString("yyyy-MM-dd")" disabled>
+				</div>
+			</div>
+			<div class="col-md-12 mb-3">
+				<div class="input-group">
+					<span class="input-group-text" id="completedOn">CompletedOn</span>
+					<input type="date" class="form-control" name="CompletedOn" value="@item.CompletedOn?.ToString("yyyy-MM-dd")">
+				</div>
+			</div>
+			<div class="col-md-12 mb-3">
+				<div class="input-group">
+					<span class="input-group-text" id="deadline">Deadline</span>
+					<input type="date" class="form-control" name="Deadline" value="@item.Deadline?.ToString("yyyy-MM-dd")">
+				</div>
+			</div>
+
+
+			<div class="col-md-12 mb-3">
+				<div class="input-group">
+					<span class="input-group-text" id="priority">Priority</span>
+					<select class="form-select" name="Priority">
+						<option value="0" selected="@(item.Priority == 0)">Keine</option>
+						<option value="1" selected="@(item.Priority == 1)">Niedrig</option>
+						<option value="2" selected="@(item.Priority == 2)">Mittel</option>
+						<option value="3" selected="@(item.Priority == 3)">Hoch</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="col-md-12 mb-3">
+				<div class="input-group">
+					<span class="input-group-text" id="tag">Tags</span>
+					@foreach (var tag in item.Tags)
+					{
+						<div  class="badge" style="padding-top:12px;background-color:#@tag.HexColor">@tag.Name</div>
+					}
+				</div>
+			</div>
+
+			<div class="col-md-12 mb-3">
+				<div class="input-group">
+					<span class="input-group-text" id="tags">Tags</span>
+					<select class="form-select" name="TagIds" multiple>
+						@foreach (var tag in Model.AvailableTags)
+						{
+							<option style="background-color: #@tag.HexColor" value="@tag.Id">@tag.Name</option>
+						}
+					</select>
+				</div>
+			</div>
+
+			<input type="hidden" name="todoId" value="@item.TodoId" />
+
+			<input type="submit" value="Save" class="btn btn-primary" /> |
+			<a asp-action="Tasks" asp-route-id="@item.TodoId" class="btn btn-secondary">Back to List</a>
+		</form>
+	</div>
+}

@@ -1,0 +1,28 @@
+﻿
+<h2>Registrieren</h2>
+<form action="/Auth/Register" method="post">
+
+	<div class="input-group mb-2">
+		<span class="input-group-text" id="username">Benutzername</span>
+		<input type="text" class="form-control" placeholder="username" name="username" value="@ViewData["Username"]" minlength="3" maxlength="50">
+	</div>
+
+	<div class="input-group mb-2">
+		<span class="input-group-text" id="mail">E-Mail</span>
+		<input type="email" class="form-control" placeholder="mail" name="mail" value="@ViewData["Mail"]">
+	</div>
+
+	<div class="input-group mb-2">
+		<span class="input-group-text" id="password">Passwort</span>
+		<input type="password" class="form-control" placeholder="password" name="password">
+	</div>
+
+	<div class="input-group mb-2">
+		<span class="input-group-text" id="password_conf">Passwort</span>
+		<input type="password" class="form-control" placeholder="password_conf" name="password_conf">
+	</div>
+
+	<button type="submit" class="btn btn-primary">Registrieren</button>
+</form>
+
+<span class="text-danger">@TempData["ErrorMessage"]</span>

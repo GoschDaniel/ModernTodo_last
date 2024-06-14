@@ -1,0 +1,25 @@
+﻿@model ModernTodo.Models.TodoModelVm
+
+@{
+    ViewData["Title"] = "EditTodo";
+}
+
+<h1>EditTodo</h1>
+
+@foreach (var item in Model.ToDoList)
+{
+    <div>
+        <form asp-action="EditTodo">
+
+            <div class="col-md-12 mb-3">
+                <div class="input-group">
+                    <span class="input-group-text" id="name">Name</span>
+                    <input type="text" class="form-control" name="name" value="@item.Name" >
+                </div>
+            </div>
+
+            <input type="submit" value="Save" class="btn btn-primary" /> |
+            <a asp-action="Todos" class="btn btn-secondary">Back to List</a>
+        </form>
+    </div>
+}

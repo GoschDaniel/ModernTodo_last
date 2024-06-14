@@ -1,0 +1,443 @@
+﻿@model TaskModelVm
+
+@{
+	ViewData["Title"] = "Task Liste";
+}
+
+<h2>Task-Liste</h2>
+<a asp-action="Todos" asp-route-id="@TempData["NewTodoId"]" class="btn btn-secondary mb-2">zurück zur Todo-Liste</a>
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="card mb-3">
+				<div class="card-header">
+					Sortierungsoptionen
+				</div>
+				<div class="card-body">
+					<div class="form-check form-switch">
+						<input class="form-check-input" type="checkbox" id="setPrio">
+						<label class="form-check-label" for="setPrio">Offene Aufgaben nach aufsteigender Priorität sortieren</label>
+					</div>
+					<div class="form-check form-switch">
+						<input class="form-check-input" type="checkbox" id="setDeadline">
+						<label class="form-check-label" for="setDeadline">Offene Aufgaben nach Deadline sortieren</label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="card mb-3">
+				<div class="card-header">
+					Anzeigefilter
+				</div>
+				<div class="card-body">
+					<div class="form-check form-switch">
+						<input class="form-check-input" type="checkbox" id="hideCompleted">
+						<label class="form-check-label" for="hideCompleted">Abgeschlossene Tasks ausblenden</label>
+					</div>
+					<div class="form-check form-switch">
+						<input class="form-check-input" type="checkbox" id="showCompleted">
+						<label class="form-check-label" for="showCompleted">Offene Aufgaben ausblenden</label>
+					</div>
+					<div class="form-check form-switch">
+						<input class="form-check-input" type="checkbox" id="showUrgent">
+						<label class="form-check-label" for="showUrgent">nur Dringende Aufgaben einblenden</label>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-md-6 mb-3">
+			<div class="input-group">
+				<span class="input-group-text" id="search">Suche</span>
+				<input type="text" class="form-control" id="searchInput" name="search" value="" maxlength="100">
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<table id="taskTable" class="table table-sm table-striped table-hover">
+	<thead>
+		<tr>
+			<th>Task-ID</th>
+			<th>Description</th>
+			<th>Todo-ID</th>
+			<th>CreatedOn</th>
+			<th>CompletedOn</th>
+			<th>Deadline</th>
+			<th>Priority</th>
+			<th>Tags</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var task in Model.TaskList)
+		{
+			string bcg = task.Urgent ? @"class=table-danger" : "";
+			string finish = task.CompletedOn != null ? @"class=table-info" : "";
+
+			<tr @finish @bcg id="@task.TodoId" data-priority="@task.Priority" data-completedon="@task.CompletedOn" data-deadline="@task.Deadline" data-urgent="@task.Urgent">
+				<td>@task.TaskId</td>
+				<td>@task.Description</td>
+				<td>@task.TodoId</td>
+				<td>@task.CreatedOn</td>
+				<td>@task.CompletedOn?.ToString("dd.MM.yyyy")</td>
+				<td>@task.Deadline?.ToString("dd.MM.yyyy")</td>
+				@{
+					string[] priorityTexts = { "Keine", "Niedrig", "Mittel", "Hoch" };
+					int index = task.Priority >= 0 && task.Priority < priorityTexts.Length ? task.Priority : -1;
+				}
+				<td>
+					<span>@(index != -1 ? priorityTexts[index] : "Unbekannt")</span>
+				</td>
+
+				<td>
+					@foreach (var tag in task.Tags)
+					{
+						<span class="badge" style="background-color:#@tag.HexColor">@tag.Name</span>
+					}
+				</td>
+				<td>
+					@Html.ActionLink("", "EditTask", new { id = task.TaskId }, new { @class = "btn btn-secondary bi bi-pencil" })
+					@Html.ActionLink("Details", "Tasks", new { id = task.TaskId }, new { @class = "btn btn-primary" })
+					@Html.ActionLink("", "DeleteTask", new { id = task.TaskId }, new { @class = "btn btn-danger bi bi-trash3" })
+					@if (task.CompletedOn == null)
+					{
+						@Html.ActionLink("", "CompleteTask", new { id = task.TaskId }, new { @class = "btn btn-success bi bi-check", @title = "Task als Abgeschlossen markieren" })
+					}
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
+<div class="row">
+	<div class="col">
+		@{
+			string addTaskButton = @"<button id=""addTaskButton"" class=""btn btn-primary"">Task hinzufügen</button>";
+
+			if (User.IsInRole("Premium-Tier") && Model.TaskList.Count < 1000)
+			{
+				@Html.Raw(addTaskButton)
+			}
+			else if (User.IsInRole("Premium-Tier") && Model.TaskList.Count >= 1000)
+			{
+				<div><span class="text-danger">Du hast deine Grenze für Premium-Tier erreicht.</span></div>
+			}
+
+			if (User.IsInRole("Free-Tier") && Model.TaskList.Count < 20)
+			{
+				@Html.Raw(addTaskButton)
+			}
+			else if (User.IsInRole("Free-Tier") && Model.TaskList.Count >= 20)
+			{
+				<form method="post" action="/User/UpgradeRole"><button class="btn btn-success mb-2">Uprade zu Premium-Tier</button></form>
+				<div><span class="text-danger">Du hast deine Grenze für Free-Tier erreicht.</span></div>
+			}
+		}
+	</div>
+	@{
+		if ((User.IsInRole("Premium-Tier") || User.IsInRole("Free-Tier")) && Model.AvailableTags.Count < 20)
+		{
+			<div class="col">
+				<button id="addTagButton" class="btn btn-warning">Tags hinzufügen</button>
+			</div>
+		}
+	}
+
+
+
+	<div class="col">
+		<form method="post" action="/User/DeleteAllCompletetedTasks">
+			<button class="btn btn-danger">Alle Erledigten Aufgaben löschen</button>
+			<input type="hidden" name="todoId" value="@TempData["NewTodoId"]" />
+		</form>
+	</div>
+</div>
+<span class="text-danger">@TempData["ErrorMessage"]</span>
+<!-- Modal Task -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="addTaskModalLabel">Neue Task hinzufügen</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+
+				<form id="addTaskForm" method="post" action="/User/AddTask">
+					<div class="col-md-12 mb-3">
+						<div class="input-group">
+							<span class="input-group-text" id="description">Description</span>
+							<input type="text" class="form-control" name="Description" value="@TempData["Description"]" maxlength="100" required>
+						</div>
+					</div>
+					<div class="col-md-12 mb-3">
+						<div class="input-group">
+							<span class="input-group-text" id="createdOn">CreatedOn</span>
+							<input type="date" class="form-control" name="CreatedOn" value="" disabled>
+						</div>
+					</div>
+					<div class="col-md-12 mb-3">
+						<div class="input-group">
+							<span class="input-group-text" id="completedOn">CompletedOn</span>
+							<input type="date" class="form-control" name="CompletedOn" value="">
+						</div>
+					</div>
+					<div class="col-md-12 mb-3">
+						<div class="input-group">
+							<span class="input-group-text" id="deadline">Deadline</span>
+							<input type="date" class="form-control" name="Deadline" value="">
+						</div>
+					</div>
+					<div class="col-md-12 mb-3">
+						<div class="input-group">
+							<span class="input-group-text" id="priority">Priority</span>
+							<select class="form-select" name="Priority">
+								<option value="0">Keine</option>
+								<option value="1">Niedrig</option>
+								<option value="2" selected>Mittel</option>
+								<option value="3">Hoch</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-md-12 mb-3">
+						<div class="input-group">
+							<span class="input-group-text" id="tags">Tags</span>
+							<select class="form-select" name="TagIds" multiple>
+								@foreach (var tag in Model.AvailableTags)
+								{
+									<option style="background-color: #@tag.HexColor" value="@tag.Id">@tag.Name</option>
+								}
+							</select>
+						</div>
+					</div>
+
+					@{
+						if (TempData["NewTodoId"] != null)
+						{
+							<input type="hidden" name="todoId" value="@TempData["NewTodoId"]" />
+						}
+
+
+					}
+				</form>
+
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" data-bs-dismiss="modal">Schließen</button>
+				<button type="submit" form="addTaskForm" class="btn btn-success">Hinzufügen</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modal Tag-->
+<div class="modal fade" id="addTagModal" tabindex="-1" aria-labelledby="addTagModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="addTagModalLabel">Neuen Tag hinzufügen</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+
+				<form id="addTagForm" method="post" action="/User/AddTag">
+
+					@foreach (var item in Model.TaskList)
+					{
+						<input type="hidden" name="todoId" value="@item.TodoId" />
+					}
+
+					<div class="col-md-12 mb-3">
+						<div class="input-group">
+							<span class="input-group-text" id="name">Name</span>
+							<input type="text" class="form-control" name="name" maxlength="10" required>
+						</div>
+					</div>
+
+					@{
+						Random random = new Random();
+						// Generate three random bytes for RGB values
+						byte[] rgb = new byte[3];
+						random.NextBytes(rgb);
+
+						// Convert the bytes to a hexadecimal string
+						string colorCode = BitConverter.ToString(rgb).Replace("-", "");
+					}
+
+					<div class="col-md-12 mb-3">
+						<div class="input-group">
+							<span class="input-group-text" id="hexColor">Farbe</span>
+							<input type="color" class="form-control" name="hexColor" maxlength="6" value="#@colorCode" required
+								   style="height: 38px;">
+						</div>
+					</div>
+					<hr />
+					<h3>Vorhandene Tags</h3>
+					<div class="col-md-12 mb-3">
+						<div class="input-group">
+							<div class="col-md-12 mb-3">
+								<div class="input-group">
+									@foreach (var tag in Model.AvailableTags)
+									{
+										<span class="badge" style="background-color:#@tag.HexColor">@tag.Name</span>
+									}
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" data-bs-dismiss="modal">Schließen</button>
+				<button type="submit" form="addTagForm" class="btn btn-success">Hinzufügen</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		$(document).ready(function () {
+			$('#addTaskButton').click(function () {
+				$('#addTaskModal').modal('show');
+			});
+
+			$('#addTagButton').click(function () {
+				$('#addTagModal').modal('show');
+			});
+
+			$('#setPrio').change(function () {
+				sortTasksPrio();
+			});
+			$('#hideCompleted').change(function () {
+				hideCompleted();
+			});
+			$('#setDeadline').change(function () {
+				sortTasksDeadline();
+			});
+			$('#showCompleted').change(function () {
+				showCompleted();
+			});
+			$('#showUrgent').change(function () {
+				showUrgent();
+			});
+
+			function hideCompleted() {
+				var rows = $('#taskTable tbody tr').get();
+				var isChecked = $('#hideCompleted').is(':checked');
+
+				$.each(rows, function (index, row) {
+					var completedOn = $(row).data('completedon');
+					if (completedOn && isChecked) {
+						$(row).hide();
+					} else {
+						$(row).show();
+					}
+				});
+			}
+
+			function showCompleted() {
+				var rows = $('#taskTable tbody tr').get();
+				var isChecked = $('#showCompleted').is(':checked');
+
+				$.each(rows, function (index, row) {
+					var completedOn = $(row).data('completedon');
+					if (!completedOn && isChecked) {
+						$(row).hide();
+					} else {
+						$(row).show();
+					}
+				});
+			}
+
+			function showUrgent() {
+				var rows = $('#taskTable tbody tr').get();
+				var isChecked = $('#showUrgent').is(':checked');
+
+				$.each(rows, function (index, row) {
+					var urgent = $(row).data('urgent');
+					if ((urgent == "False") && isChecked) {
+						$(row).hide();
+					} else {
+						$(row).show();
+					}
+				});
+			}
+
+			function sortTasksDeadline() {
+				var rows = $('#taskTable tbody tr').get();
+				var isChecked = $('#setDeadline').is(':checked');
+
+				rows.sort(function (a, b) {
+					var completedA = $(a).data('completedon');
+					var completedB = $(b).data('completedon');
+
+					if (!completedA && !completedB) {
+						if (isChecked) {
+							var priorityA = parseInt($(a).data('deadline'));
+							var priorityB = parseInt($(b).data('deadline'));
+							return priorityA - priorityB;
+						} else {
+							var idA = parseInt($(a).find('td:first').text());
+							var idB = parseInt($(b).find('td:first').text());
+							return idA - idB;
+						}
+					}
+					return 0; // Keep other rows unchanged in order
+				});
+
+				// Re-append sorted rows to the table
+				$.each(rows, function (index, row) {
+					$('#taskTable tbody').append(row);
+				});
+			}
+
+			function sortTasksPrio() {
+				var rows = $('#taskTable tbody tr').get();
+				var isChecked = $('#setPrio').is(':checked');
+
+				rows.sort(function (a, b) {
+					var completedA = $(a).data('completedon');
+					var completedB = $(b).data('completedon');
+
+					if (!completedA && !completedB) {
+						if (isChecked) {
+							var priorityA = parseInt($(a).data('priority'));
+							var priorityB = parseInt($(b).data('priority'));
+							return priorityB - priorityA;
+						} else {
+							var idA = parseInt($(a).find('td:first').text());
+							var idB = parseInt($(b).find('td:first').text());
+							return idA - idB;
+						}
+					}
+
+					return completedA ? 1 : -1;
+				});
+
+				$.each(rows, function (index, row) {
+					$('#taskTable tbody').append(row);
+				});
+			}
+
+			$('#searchInput').on("input", function () {
+				var searchTerm = $(this).val().trim().toLowerCase();
+
+				$('#taskTable tbody tr').each(function () {
+					var description = $(this).find('td:nth-child(2)').text().trim().toLowerCase();
+
+					if (description.includes(searchTerm)) {
+						$(this).show();
+					} else {
+						$(this).hide();
+					}
+				});
+			});
+		});
+	</script>
+}

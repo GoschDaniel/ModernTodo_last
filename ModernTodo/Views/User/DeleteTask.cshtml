@@ -1,0 +1,81 @@
+﻿@model ModernTodo.Models.TaskModelVm
+
+@{
+    ViewData["Title"] = "DeleteTask";
+}
+
+<h1>DeleteTodo</h1>
+
+@foreach (var item in Model.TaskList)
+{
+    <div>
+        <h4>Todo details:</h4>
+        <dl class="row">
+            <dt class="col-sm-2">
+                Id:
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => item.TaskId)
+            </dd>
+
+            <dt class="col-sm-2">
+                Description:
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => item.Description)
+            </dd>
+
+            <dt class="col-sm-2">
+                TodoId:
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => item.TodoId)
+            </dd>
+
+
+
+            <dt class="col-sm-2">
+                CreatedOn:
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => item.CreatedOn)
+            </dd>
+            <dt class="col-sm-2">
+                CompletedOn:
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => item.CompletedOn)
+            </dd>
+
+            <dt class="col-sm-2">
+                Deadline:
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => item.Deadline)
+            </dd>
+
+            <dt class="col-sm-2">
+                Priority:
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => item.Priority)
+            </dd>
+
+            <dt class="col-sm-2">
+                Tags:
+            </dt>
+            <dd class="col-sm-10">
+                	    @foreach (var tag in item.Tags)
+					{
+						<span class="badge" style="background-color:#@tag.HexColor">@tag.Name</span>
+					}
+            </dd>
+
+        </dl>
+
+        <form asp-action="ConfirmDeleteTask" asp-route-id="@item.TaskId">
+            <input type="submit" value="Confirm Delete" class="btn btn-danger" /> |
+            <a asp-action="Tasks" asp-route-id="@item.TodoId" class="btn btn-secondary">Back to List</a>
+        </form>
+    </div>
+}

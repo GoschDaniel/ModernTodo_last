@@ -1,0 +1,115 @@
+﻿@model TodoModelVm
+
+@{
+	ViewData["Title"] = "Todo Liste";
+}
+
+<h2>ToDoListe</h2>
+
+<table id="todoTable" class="table table-sm table-striped table-hover">
+	<thead>
+		<tr>
+			<th>Todo-ID</th>
+			<th>Name</th>
+			<th>Aufgaben</th>
+			<th>Offene Aufagben</th>
+			<th>Geschlossene Aufgaben</th>
+			<th>UserId</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var todo in Model.ToDoList)
+		{
+			<tr id="@todo.TodoId">
+				<td>@todo.TodoId</td>
+				<td>@todo.Name</td>
+				<td>@(todo.CompletedTasksCount + todo.NotCompletedTasksCount)</td>
+				<td>@todo.CompletedTasksCount</td>
+				<td>@todo.NotCompletedTasksCount</td>
+				<td>@todo.UserId</td>
+
+				<td>
+					@Html.ActionLink("", "EditTodo",
+										new { id = todo.TodoId },
+										new { @class = "btn btn-secondary bi bi-pencil" })
+					@Html.ActionLink("Details", "Tasks",
+										new { id = todo.TodoId },
+										new { @class = "btn btn-primary" })
+
+					@Html.ActionLink("", "DeleteTodo",
+										new { id = todo.TodoId },
+										new { @class = "btn btn-danger bi bi-trash3" })
+				</td>
+
+
+			</tr>
+		}
+	</tbody>
+</table>
+
+@{
+	string addTodoButton = @"<button id=""addTodoButton"" class=""btn btn-primary"">Todo hinzufügen</button>";
+
+	if (User.IsInRole("Premium-Tier") && Model.ToDoList.Count < 100)
+	{
+		@Html.Raw(addTodoButton)
+	}
+	else if (User.IsInRole("Premium-Tier") && Model.ToDoList.Count >= 100)
+	{
+		<div><span class="text-danger">Du hast deine Grenze für Premium-Tier erreicht.</span> </div>
+	}
+
+	if (User.IsInRole("Free-Tier") && Model.ToDoList.Count < 5)
+	{
+		@Html.Raw(addTodoButton)
+	}
+	else if (User.IsInRole("Free-Tier") && Model.ToDoList.Count >= 5)
+	{
+		<div>
+			<span class="text-danger">Du hast deine Grenze für Free-Tier erreicht.</span>
+			<form method="post" action="/User/UpgradeRole"><button class="btn btn-success">Uprade zu Premium-Tier</button></form>
+		</div>
+	}
+}
+
+
+<span class="text-danger">@TempData["ErrorMessage"]</span>
+
+<!-- Modal -->
+<div class="modal fade" id="addTodoModal" tabindex="-1" aria-labelledby="addTodoModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="addTodoModalLabel">Neue Todo hinzufügen</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+
+				<form id="addTodoForm" method="post" action="/User/AddTodo">
+					<div class="col-md-12 mb-3">
+						<div class="input-group">
+							<span class="input-group-text" id="name">Name</span>
+							<input type="text" class="form-control" name="name" value="" maxlength="30" required>
+						</div>
+					</div>
+				</form>
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" data-bs-dismiss="modal">Schließen</button>
+				<button type="submit" form="addTodoForm" class="btn btn-success">Hinzufügen</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		$(document).ready(function () {
+			$('#addTodoButton').click(function () {
+				$('#addTodoModal').modal('show');
+			});
+		});
+	</script>
+}

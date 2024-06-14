@@ -1,0 +1,21 @@
+﻿@using System.Security.Claims
+@{
+	ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+	@if (User.Identity.IsAuthenticated)
+	{
+		<h3>Hallo, @User.Identity.Name!</h3>
+
+		var roleNameClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+		<h4>Rolle: @roleNameClaim</h4>
+		<a href="/Auth/Logout" class="btn btn-primary">Ausloggen</a>
+	}
+	else
+	{
+		<a href="/Auth/Register" class="btn btn-primary">Registrieren</a>
+		<a href="/Auth/Login" class="btn btn-success">Einloggen</a>
+	}
+</div>

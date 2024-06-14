@@ -1,0 +1,9 @@
+
+
+
+
+dotnet ef installieren: 
+dotnet tool install --global dotnet-ef
+
+scaffold: 
+dotnet ef dbcontext scaffold name="AppDb" Microsoft.EntityFrameworkCore.SqlServer -o Data -f
